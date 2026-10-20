@@ -1,0 +1,33 @@
+repository = "llvm/llvm-project"
+display_name = "LLVM"
+tag_prefix = "llvmorg-"
+version_dir_prefix = "v"
+include_prerelease = false
+
+poll_interval_secs = 18000  # 5 hours
+notification_expire_ms = 0
+action_label = "Open folder"
+
+max_response_bytes = 8388608
+max_commits = 1000
+
+# [webhook]
+# enabled = true
+# url = "https://discord.com/api/webhooks/ID/TOKEN"
+# username = "LLVMNotificator"
+
+[[components]]
+name = "llvm"
+notes_path = "llvm/docs/ReleaseNotes.md"
+
+[[components]]
+name = "clang"
+notes_path = "clang/docs/ReleaseNotes.md"
+
+[[components]]
+name = "mlir"
+notes_path = "mlir/docs/ReleaseNotes.md"
+
+[[components]]
+name = "flang"
+notes_path = "flang/docs/ReleaseNotes.md"

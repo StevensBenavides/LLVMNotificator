@@ -1,0 +1,45 @@
+[package]
+name = "LLVMNotificator"
+description = "LLVM release watcher with desktop notifications and changelogs."
+license = "MIT"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89.0"
+
+authors = [
+    "Stevens Benavides"
+]
+
+[[bin]]
+name = "LLVMNotificator"
+path = "src/main.rs"
+
+[lib]
+name = "llvm_notificator"
+path = "src/lib.rs"
+
+[dependencies]
+futures-lite = "2"
+mimalloc = { version = "0.1", default-features = false }
+percent-encoding = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+similar = "3"
+toml = "1"
+ureq = { version = "3", features = ["multipart"] }
+zbus = "6"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+debug = false
+debug-assertions = false
+overflow-checks = false
+incremental = false
+
+[profile.release.package."*"]
+opt-level = 3
+codegen-units = 1

@@ -1,0 +1,15 @@
+/target/
+**/*.rs.bk
+
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+.env
+token
+
+.DS_Store
+.idea/
+.vscode/
