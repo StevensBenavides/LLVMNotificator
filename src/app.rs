@@ -35,7 +35,7 @@ use crate::error::Result;
 use crate::github::{GithubClient, Release};
 use crate::notify::{Notifier, NotifierEvent};
 use crate::state::{PendingNotification, State};
-use crate::version::Version;
+use crate::version::{TAG_PREFIX, VERSION_DIR_PREFIX, Version};
 
 #[derive(Debug)]
 pub struct App {
@@ -331,9 +331,7 @@ impl App {
             return Ok(());
         };
 
-        let Some(latest_version) =
-            Version::parse(latest.get_tag_name(), self.config.get_tag_prefix())
-        else {
+        let Some(latest_version) = Version::parse(latest.get_tag_name(), TAG_PREFIX) else {
             eprintln!(
                 "warning: release ignored due to incompatible tag prefix: {}",
                 latest.get_tag_name()
@@ -342,10 +340,10 @@ impl App {
             return Ok(());
         };
 
-        let last_version = self
+        let last_version: Option<Version> = self
             .state
             .get_last_tag()
-            .and_then(|tag| Version::parse(tag, self.config.get_tag_prefix()));
+            .and_then(|tag| Version::parse(tag, TAG_PREFIX));
 
         if let Some(last) = &last_version
             && !latest_version.is_newer_than(last)
@@ -361,9 +359,7 @@ impl App {
         }
 
         let last_tag: Option<String> = self.state.get_last_tag().map(str::to_string);
-
         let include_prerelease: bool = self.config.get_include_prerelease();
-
         let mut releases: Vec<Release> = self.client.fetch_releases()?;
 
         releases.retain(|release| {
@@ -375,9 +371,7 @@ impl App {
                 return false;
             }
 
-            let Some(version) =
-                Version::parse(release.get_tag_name(), self.config.get_tag_prefix())
-            else {
+            let Some(version) = Version::parse(release.get_tag_name(), TAG_PREFIX) else {
                 return false;
             };
 
@@ -390,9 +384,7 @@ impl App {
             after_last && not_after_latest
         });
 
-        releases.sort_by_key(|release| {
-            Version::parse(release.get_tag_name(), self.config.get_tag_prefix())
-        });
+        releases.sort_by_key(|release| Version::parse(release.get_tag_name(), TAG_PREFIX));
 
         if releases.is_empty() {
             releases.push(latest.clone());
@@ -435,11 +427,10 @@ impl App {
     pub fn backfill(&mut self, tag: &str) -> Result<()> {
         let release = self.client.fetch_release_by_tag(tag)?;
 
-        let Some(version) = Version::parse(release.get_tag_name(), self.config.get_tag_prefix())
-        else {
+        let Some(version) = Version::parse(release.get_tag_name(), TAG_PREFIX) else {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
-                format!("tag does not match the configured prefix: {tag}"),
+                format!("tag does not match the expected prefix: {tag}"),
             )
             .into());
         };
@@ -455,10 +446,10 @@ impl App {
         }
 
         if !self.cli.get_simulate() {
-            let current_last = self
+            let current_last: Option<Version> = self
                 .state
                 .get_last_tag()
-                .and_then(|tag| Version::parse(tag, self.config.get_tag_prefix()));
+                .and_then(|tag| Version::parse(tag, TAG_PREFIX));
 
             if current_last.is_none_or(|last| version.is_newer_than(&last)) {
                 self.state
@@ -528,17 +519,13 @@ impl App {
 
     fn fetch_current_release(&mut self) -> Result<Option<Release>> {
         if self.config.get_include_prerelease() {
-            let releases = self.client.fetch_releases()?;
+            let releases: Vec<Release> = self.client.fetch_releases()?;
 
-            let latest = releases
+            let latest: Option<Release> = releases
                 .into_iter()
                 .filter(|release| !release.get_draft())
-                .filter(|release| {
-                    Version::parse(release.get_tag_name(), self.config.get_tag_prefix()).is_some()
-                })
-                .max_by_key(|release| {
-                    Version::parse(release.get_tag_name(), self.config.get_tag_prefix())
-                });
+                .filter(|release| Version::parse(release.get_tag_name(), TAG_PREFIX).is_some())
+                .max_by_key(|release| Version::parse(release.get_tag_name(), TAG_PREFIX));
 
             Ok(latest)
         } else {
@@ -556,7 +543,7 @@ impl App {
             .filter(|release| !release.get_draft())
             .filter(|release| include_prerelease || !release.get_prerelease())
             .filter_map(|release| {
-                Version::parse(release.get_tag_name(), self.config.get_tag_prefix())
+                Version::parse(release.get_tag_name(), TAG_PREFIX)
                     .map(|version| (version, release.get_tag_name().to_string()))
             })
             .filter(|(version, _tag)| version < target)
@@ -575,15 +562,14 @@ impl App {
         let changelog: Changelog =
             Changelog::generate(&self.client, &self.config, release, previous_tag)?;
 
-        let Some(version) = Version::parse(release.get_tag_name(), self.config.get_tag_prefix())
-        else {
+        let Some(version) = Version::parse(release.get_tag_name(), TAG_PREFIX) else {
             return Ok(());
         };
 
         let folder: std::path::PathBuf = self
             .paths
             .changelogs_dir()
-            .join(version.folder_name(self.config.get_version_dir_prefix()));
+            .join(version.folder_name(VERSION_DIR_PREFIX));
 
         changelog.write(&folder, self.config.get_display_name())?;
 
@@ -634,7 +620,6 @@ impl App {
         let pending: Vec<PendingNotification> = std::mem::take(self.state.get_mut_pending());
 
         let mut delivered: Vec<String> = Vec::<String>::new();
-
         let mut remaining: Vec<PendingNotification> = Vec::<PendingNotification>::new();
 
         let notifier: &mut Notifier = &mut self.notifier;
@@ -664,7 +649,7 @@ impl App {
 
         delivered_tags.extend(delivered);
 
-        let excess = delivered_tags.len().saturating_sub(50);
+        let excess: usize = delivered_tags.len().saturating_sub(50);
 
         if excess > 0 {
             delivered_tags.drain(0..excess);

@@ -328,7 +328,6 @@ impl State {
         }
 
         let serialized: Vec<u8> = serde_json::to_vec_pretty(self)?;
-
         let temporary: std::path::PathBuf = path.with_extension("json.tmp");
 
         std::fs::write(&temporary, serialized)?;
@@ -344,13 +343,13 @@ mod tests {
 
     #[test]
     fn roundtrip() {
-        let mut state = State::new();
+        let mut state: State = State::new();
 
         state.set_repository("llvm/llvm-project".to_string());
         state.set_last_tag(Some("llvmorg-23.1.4".to_string()));
 
-        let encoded = serde_json::to_string(&state).unwrap();
-        let decoded = serde_json::from_str::<State>(&encoded).unwrap();
+        let encoded: String = serde_json::to_string(&state).unwrap();
+        let decoded: State = serde_json::from_str::<State>(&encoded).unwrap();
 
         assert_eq!(decoded.get_repository(), "llvm/llvm-project");
         assert_eq!(decoded.get_last_tag(), Some("llvmorg-23.1.4"));
@@ -358,7 +357,7 @@ mod tests {
 
     #[test]
     fn missing_fields_use_new_defaults() {
-        let decoded = serde_json::from_str::<State>("{}").unwrap();
+        let decoded: State = serde_json::from_str::<State>("{}").unwrap();
 
         assert_eq!(decoded.get_schema_version(), 1);
         assert_eq!(decoded.get_last_tag(), None);

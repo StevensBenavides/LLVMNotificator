@@ -623,7 +623,7 @@ impl GithubClient {
                 Ok(mut response) => {
                     let status: u16 = response.status().as_u16();
 
-                    let response_etag = response
+                    let response_etag: Option<String> = response
                         .headers()
                         .get("etag")
                         .and_then(|value| value.to_str().ok())

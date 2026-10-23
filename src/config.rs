@@ -167,8 +167,6 @@ impl Webhook {
 pub struct Config {
     repository: String,
     display_name: String,
-    tag_prefix: String,
-    version_dir_prefix: String,
     include_prerelease: bool,
     poll_interval_secs: u64,
     notification_expire_ms: i32,
@@ -187,8 +185,6 @@ impl Config {
         Config {
             repository: "llvm/llvm-project".to_string(),
             display_name: "LLVM".to_string(),
-            tag_prefix: "llvmorg-".to_string(),
-            version_dir_prefix: "v".to_string(),
             include_prerelease: false,
             poll_interval_secs: 5 * 60 * 60,
             notification_expire_ms: 0,
@@ -216,16 +212,6 @@ impl Config {
     #[inline]
     pub fn get_display_name(&self) -> &str {
         &self.display_name
-    }
-
-    #[inline]
-    pub fn get_tag_prefix(&self) -> &str {
-        &self.tag_prefix
-    }
-
-    #[inline]
-    pub fn get_version_dir_prefix(&self) -> &str {
-        &self.version_dir_prefix
     }
 
     #[inline]
@@ -286,16 +272,6 @@ impl Config {
     }
 
     #[inline]
-    pub fn set_tag_prefix(&mut self, tag_prefix: String) {
-        self.tag_prefix = tag_prefix;
-    }
-
-    #[inline]
-    pub fn set_version_dir_prefix(&mut self, version_dir_prefix: String) {
-        self.version_dir_prefix = version_dir_prefix;
-    }
-
-    #[inline]
     pub fn set_include_prerelease(&mut self, include_prerelease: bool) {
         self.include_prerelease = include_prerelease;
     }
@@ -350,16 +326,6 @@ impl Config {
     #[inline]
     pub fn get_mut_display_name(&mut self) -> &mut String {
         &mut self.display_name
-    }
-
-    #[inline]
-    pub fn get_mut_tag_prefix(&mut self) -> &mut String {
-        &mut self.tag_prefix
-    }
-
-    #[inline]
-    pub fn get_mut_version_dir_prefix(&mut self) -> &mut String {
-        &mut self.version_dir_prefix
     }
 
     #[inline]
@@ -699,6 +665,17 @@ mod tests {
         assert_eq!(config.get_display_name(), "LLVM");
         assert_eq!(config.get_poll_interval_secs(), 5 * 60 * 60);
         assert_eq!(config.get_components().len(), 4);
+    }
+
+    #[test]
+    fn legacy_prefix_keys_are_ignored() {
+        let config = toml::from_str::<Config>(
+            "repository = \"owner/project\"\ntag_prefix = \"custom-\"\nversion_dir_prefix = \"release-\"\n",
+        )
+        .unwrap();
+
+        assert_eq!(config.get_repository(), "owner/project");
+        assert_eq!(config.get_display_name(), "LLVM");
     }
 
     #[test]

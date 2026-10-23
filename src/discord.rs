@@ -113,10 +113,9 @@ impl DiscordClient {
             return Err(std::io::Error::other("Discord webhook is disabled").into());
         }
 
-        let url = self.validated_url()?;
+        let url: String = self.validated_url()?;
 
-        let mut attempt = 0u32;
-
+        let mut attempt: u32 = 0u32;
         let mut last_error: String = String::from("Discord webhook validation failed");
 
         while attempt < 2 {
@@ -207,7 +206,6 @@ impl DiscordClient {
             self.build_release_messages(changelog, release, folder, config);
 
         self.post_multipart(&payload, &files)?;
-
         self.post_json(&links)?;
 
         eprintln!("Discord: sent {} to #{channel}", changelog.get_tag());
@@ -230,14 +228,6 @@ impl DiscordClient {
         }
 
         Ok(url.to_string())
-    }
-
-    fn wait_url(&self) -> Result<String> {
-        let base: String = self.validated_url()?;
-
-        let separator: char = if base.contains('?') { '&' } else { '?' };
-
-        Ok(format!("{base}{separator}wait=true"))
     }
 
     fn build_release_messages(
@@ -320,7 +310,7 @@ impl DiscordClient {
             })
             .collect::<Vec<Value>>();
 
-        let mut payload = json!({
+        let mut payload: Value = json!({
             "content": format!("**{title}**"),
             "embeds": [embed],
             "attachments": attachments,
@@ -331,7 +321,7 @@ impl DiscordClient {
             payload["username"] = json!(self.webhook.get_username());
         }
 
-        let links = self.build_links_message(changelog, release, config);
+        let links: String = self.build_links_message(changelog, release, config);
 
         (payload.to_string(), files, links)
     }
@@ -488,9 +478,9 @@ impl DiscordClient {
 
             match result {
                 Ok(mut response) => {
-                    let status = response.status().as_u16();
+                    let status: u16 = response.status().as_u16();
 
-                    let body = response
+                    let body: String = response
                         .body_mut()
                         .with_config()
                         .limit(self.max_response_bytes as u64)
@@ -527,6 +517,14 @@ impl DiscordClient {
 
         Err(std::io::Error::other(last_error).into())
     }
+
+    fn wait_url(&self) -> Result<String> {
+        let base: String = self.validated_url()?;
+
+        let separator: char = if base.contains('?') { '&' } else { '?' };
+
+        Ok(format!("{base}{separator}wait=true"))
+    }
 }
 
 fn retry_delay(body: &str) -> Duration {
@@ -539,7 +537,7 @@ fn retry_delay(body: &str) -> Duration {
 
 fn encode_path(path: &str) -> String {
     path.split('/')
-        .map(|segment| utf8_percent_encode(segment, PATH_SEGMENT).to_string())
+        .map(|segment| self::utf8_percent_encode(segment, PATH_SEGMENT).to_string())
         .collect::<Vec<String>>()
         .join("/")
 }

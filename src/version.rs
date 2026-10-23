@@ -24,6 +24,9 @@
 
 */
 
+pub(crate) const TAG_PREFIX: &str = "llvmorg-";
+pub(crate) const VERSION_DIR_PREFIX: &str = "v";
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Version {
     major: u32,

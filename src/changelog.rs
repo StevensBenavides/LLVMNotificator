@@ -33,7 +33,7 @@ use similar::TextDiff;
 use crate::config::Config;
 use crate::error::Result;
 use crate::github::{Commit, GithubClient, Release};
-use crate::version::Version;
+use crate::version::{TAG_PREFIX, Version};
 
 #[derive(Debug, Clone)]
 pub struct Changelog {
@@ -222,12 +222,12 @@ impl Changelog {
         release: &Release,
         previous_tag: Option<&str>,
     ) -> Result<Changelog> {
-        let Some(version) = Version::parse(release.get_tag_name(), config.get_tag_prefix()) else {
+        let Some(version) = Version::parse(release.get_tag_name(), TAG_PREFIX) else {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
                 format!(
-                    "tag does not match prefix {}: {}",
-                    config.get_tag_prefix(),
+                    "tag does not match expected prefix {}: {}",
+                    TAG_PREFIX,
                     release.get_tag_name()
                 ),
             )

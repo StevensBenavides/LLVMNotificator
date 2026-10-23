@@ -42,12 +42,6 @@ enable:
 disable:
 	systemctl --user disable --now LLVMNotificator.service
 
-native:
-	RUSTFLAGS="-C target-cpu=native" cargo build --release
-
-size:
-	CARGO_PROFILE_RELEASE_OPT_LEVEL=z cargo build --release
-
 run:
 	cargo run --release -- --check --simulate
 

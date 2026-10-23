@@ -88,8 +88,6 @@ $ chmod 600 ~/.config/LLVMNotificator/config.toml
 ```toml
 repository = "llvm/llvm-project"
 display_name = "LLVM"
-tag_prefix = "llvmorg-"
-version_dir_prefix = "v"
 include_prerelease = false
 
 poll_interval_secs = 18000  # 5 hours
@@ -127,8 +125,6 @@ notes_path = "flang/docs/ReleaseNotes.md"
 | --- | --- | --- |
 | `repository` | `llvm/llvm-project` | GitHub repository in `owner/project` format. |
 | `display_name` | `LLVM` | Prefix used in notifications, directory summaries, and Discord messages. |
-| `tag_prefix` | `llvmorg-` | Prefix removed from release tags to parse `X.Y.Z`. |
-| `version_dir_prefix` | `v` | Prefix used for changelog folders, for example `v23.1.4/`. |
 | `include_prerelease` | `false` | Include GitHub prereleases when selecting the latest version. |
 | `poll_interval_secs` | `18000` | Seconds between checks (5 hours by default). Minimum: `30`. |
 | `notification_expire_ms` | `0` | Desktop notification timeout in milliseconds. `0` keeps it until dismissed. |
@@ -139,6 +135,8 @@ notes_path = "flang/docs/ReleaseNotes.md"
 | `webhook.url` | empty | Discord incoming webhook URL. Never logged. |
 | `webhook.username` | empty | Optional Discord username override. |
 | `components` | LLVM, Clang, MLIR, Flang | Release-note sources. Each entry has `name` and `notes_path`. |
+
+The release tag prefix (`llvmorg-`) and the changelog folder prefix (`v`) are internal and fixed; they are not configurable.
 
 The first component (`llvm`) is written to the top-level `ReleaseNotes.md` inside each version folder and is the only component sent to Discord. The remaining components are stored in subfolders such as `clang/ReleaseNotes.md`.
 

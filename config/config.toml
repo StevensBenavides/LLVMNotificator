@@ -1,7 +1,5 @@
 repository = "llvm/llvm-project"
 display_name = "LLVM"
-tag_prefix = "llvmorg-"
-version_dir_prefix = "v"
 include_prerelease = false
 
 poll_interval_secs = 18000  # 5 hours
